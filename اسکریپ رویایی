@@ -1,0 +1,121 @@
+import os, re, subprocess, json
+from urllib.parse import quote
+from rich import print
+
+protocols = ["vmess://", "vless://", "trojan://", "ss://"]
+
+def extract_host(config):
+    m = re.search(r"@([^:/?#]+)", config)
+    return m.group(1) if m else None
+
+def ping_host(host):
+    try:
+        out = subprocess.check_output(["ping", "-c", "3", "-W", "1", host], stderr=subprocess.DEVNULL).decode()
+        m = re.search(r"rtt min/avg/max/mdev = [\d.]+/([\d.]+)", out)
+        return float(m.group(1)) if m else None
+    except: return None
+
+def classify_ping(p):
+    if p is None: return "red"
+    if p < 150: return "green"
+    if p < 300: return "yellow"
+    return "red"
+
+def fetch_sub_links():
+    configs = []
+    while True:
+        url = input("Enter subscription URL: ").strip()
+        try:
+            import requests
+            r = requests.get(url)
+            r.raise_for_status()
+            text = r.text.encode('ascii', errors='ignore').decode()  # Remove emojis/non-ASCII
+            configs += [line.strip() for line in text.splitlines() if any(line.startswith(p) for p in protocols)]
+            print(f"[green]✅ Fetched {len(configs)} configs so far[/green]")
+        except Exception as e:
+            print(f"[red]❌ Failed to fetch: {e}[/red]")
+        if input("➕ Add another sub link? (y/n): ").lower() != 'y':
+            break
+    return configs
+
+def save_file(configs, filename, ftype="txt"):
+    folder = "./output"
+    os.makedirs(folder, exist_ok=True)
+    path = os.path.join(folder, f"{filename}.{ftype}")
+    if ftype == "txt":
+        with open(path, "w") as f:
+            f.writelines(c + "\n" for c in configs)
+    elif ftype == "json":
+        with open(path, "w") as f:
+            json.dump(configs, f, indent=2)
+    elif ftype == "yaml":
+        with open(path, "w") as f:
+            f.write("proxies:\n")
+            for i, c in enumerate(configs, 1):
+                host = extract_host(c) or "unknown"
+                f.write(f"  - name: proxy{i}\n    type: custom\n    server: {host}\n    raw: '{c}'\n")
+    print(f"[cyan]✅ Saved {ftype.upper()} file: {path}[/cyan]")
+
+def main():
+    print("Choose input mode:\n1) Paste configs manually\n2) Fetch from sub link")
+    choice = input("Enter choice (1 or 2): ").strip()
+    if choice == "1":
+        print("Paste configs line by line, empty line to finish:")
+        configs = []
+        while True:
+            line = input()
+            if not line.strip():
+                break
+            if any(line.startswith(p) for p in protocols):
+                configs.append(line.strip())
+    else:
+        configs = fetch_sub_links()
+
+    if not configs:
+        print("[red]No valid configs found![/red]")
+        return
+
+    ping_map = {}
+    for c in configs:
+        host = extract_host(c)
+        ping = ping_host(host) if host else None
+        color = classify_ping(ping)
+        ping_map[c] = color
+        ping_label = f"[bold green]GOOD[/bold green]" if color=="green" else f"[bold yellow]WARN[/bold yellow]" if color=="yellow" else f"[bold red]BAD[/bold red]"
+        print(f"{ping_label} {host or 'Unknown'} - {ping if ping else 'No Reply'} ms")
+
+    green = [c for c,v in ping_map.items() if v=="green"]
+    yellow = [c for c,v in ping_map.items() if v=="yellow"]
+    red = [c for c,v in ping_map.items() if v=="red"]
+
+    print("\nConfigs Summary")
+    print(f"All: {len(configs)}, Green: {len(green)}, Yellow: {len(yellow)}, Red: {len(red)}")
+
+    while True:
+        print("\nSelect output option:")
+        print("1) Save all as TXT\n2) Save green as TXT\n3) Save green+yellow as TXT")
+        print("4) Save all as JSON\n5) Save green as JSON\n6) Save green+yellow as JSON")
+        print("7) Save all as YAML\n0) Exit")
+        opt = input("Choice: ").strip()
+        if opt == "0":
+            print("Bye!")
+            break
+        elif opt == "1":
+            save_file(configs, "all_configs", "txt")
+        elif opt == "2":
+            save_file(green, "green_configs", "txt")
+        elif opt == "3":
+            save_file(green + yellow, "green_yellow_configs", "txt")
+        elif opt == "4":
+            save_file(configs, "all_configs", "json")
+        elif opt == "5":
+            save_file(green, "green_configs", "json")
+        elif opt == "6":
+            save_file(green + yellow, "green_yellow_configs", "json")
+        elif opt == "7":
+            save_file(configs, "clash_meta_configs", "yaml")
+        else:
+            print("[red]Invalid option! Try again.[/red]")
+
+if __name__ == "__main__":
+    main()
