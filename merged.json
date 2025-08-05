@@ -1,21 +1,52 @@
 [
-  { "id": 1, "name": "Fragment One" },
-  { "id": 2, "name": "Fragment Two" },
-  { "id": 3, "name": "Fragment Three" },
-  { "id": 4, "name": "Fragment Four" },
-  { "id": 5, "name": "Fragment Five" }
-]
-[
-  { "id": 1, "name": "Config One" },
-  { "id": 2, "name": "Config Two" },
-  { "id": 3, "name": "Config Three" },
-  { "id": 4, "name": "Config Four" },
-  { "id": 5, "name": "Config Five" }
-]
-[
-  { "id": 1, "name": "Fragment One" },
-  { "id": 2, "name": "Fragment Two" },
-  { "id": 3, "name": "Fragment Three" },
-  { "id": 4, "name": "Fragment Four" },
-  { "id": 5, "name": "Fragment Five" }
+  {
+    "type": "config",
+    "list": [
+      { "id": 1, "name": "Config One" },
+      { "id": 2, "name": "Config Two" },
+      { "id": 3, "name": "Config Three" },
+      { "id": 4, "name": "Config Four" },
+      { "id": 5, "name": "Config Five" }
+    ]
+  },
+  {
+    "type": "fregment",
+    "list": [
+      { "id": 1, "name": "Fragment One" },
+      { "id": 2, "name": "Fragment Two" },
+      { "id": 3, "name": "Fragment Three" },
+      { "id": 4, "name": "Fragment Four" },
+      { "id": 5, "name": "Fragment Five" }
+    ]
+  },
+  {
+    "type": "clash",
+    "list": [
+      { "id": 1, "name": "Clash One" },
+      { "id": 2, "name": "Clash Two" },
+      { "id": 3, "name": "Clash Three" },
+      { "id": 4, "name": "Clash Four" },
+      { "id": 5, "name": "Clash Five" }
+    ]
+  },
+  {
+    "type": "raw",
+    "list": [
+      { "id": 1, "name": "Raw One" },
+      { "id": 2, "name": "Raw Two" },
+      { "id": 3, "name": "Raw Three" },
+      { "id": 4, "name": "Raw Four" },
+      { "id": 5, "name": "Raw Five" }
+    ]
+  },
+  {
+    "type": "txt",
+    "list": [
+      { "id": 1, "name": "Txt One" },
+      { "id": 2, "name": "Txt Two" },
+      { "id": 3, "name": "Txt Three" },
+      { "id": 4, "name": "Txt Four" },
+      { "id": 5, "name": "Txt Five" }
+    ]
+  }
 ]
